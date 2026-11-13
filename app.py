@@ -223,8 +223,7 @@ ANNUAL_EVENTS_META = [
     {
         "Year": 1997,
         "Category": "YoY Event 1: Macro & Pandemic Demand Shocks",
-        "Above_Label": "Asian Crisis",
-        "Below_Label": "",
+        "Label": "Asian Crisis",
         "Event": "Asian Financial Crisis (begun Jul 1997) slumps global oil demand into a 35-year low in 1998",
         "Onset_Month": 10,
         "Onset_Day": 1,
@@ -237,8 +236,7 @@ ANNUAL_EVENTS_META = [
     {
         "Year": 1999,
         "Category": "YoY Event 2: OPEC+ & U.S. Shale Supply",
-        "Above_Label": "",
-        "Below_Label": "OPEC Cuts",
+        "Label": "OPEC Cuts",
         "Event": "Coordinated OPEC production cuts (begun Mar 1999) drive a +31.6% price surge into 2000",
         "Onset_Month": 3,
         "Onset_Day": 27,
@@ -251,8 +249,7 @@ ANNUAL_EVENTS_META = [
     {
         "Year": 2005,
         "Category": "Monthly Event 3: Gulf Coast Hurricanes",
-        "Above_Label": "Katrina & Rita",
-        "Below_Label": "",
+        "Label": "Katrina & Rita",
         "Event": "Hurricanes Katrina & Rita (Aug–Sep 2005) knock Gulf Coast offshore rigs and refineries offline",
         "Onset_Month": 8,
         "Onset_Day": 29,
@@ -265,8 +262,7 @@ ANNUAL_EVENTS_META = [
     {
         "Year": 2008,
         "Category": "YoY Event 1: Macro & Pandemic Demand Shocks",
-        "Above_Label": "Financial Crisis",
-        "Below_Label": "",
+        "Label": "Financial Crisis",
         "Event": "Global Financial Crisis summer 2008 peak followed by a -23.4% demand-collapse crash in 2009",
         "Onset_Month": 7,
         "Onset_Day": 15,
@@ -279,8 +275,7 @@ ANNUAL_EVENTS_META = [
     {
         "Year": 2011,
         "Category": "YoY Event 4: SPR Releases & Blending Policy",
-        "Above_Label": "",
-        "Below_Label": "SPR Release",
+        "Label": "SPR Release",
         "Event": "Emergency 30.6M-bbl Strategic Petroleum Reserve (SPR) drawdown & ethanol blending mandates",
         "Onset_Month": 6,
         "Onset_Day": 23,
@@ -293,8 +288,7 @@ ANNUAL_EVENTS_META = [
     {
         "Year": 2012,
         "Category": "YoY Event 3: Geopolitical Conflicts & Sanctions",
-        "Above_Label": "Libya / Iran Sanctions",
-        "Below_Label": "",
+        "Label": "Libya / Iran Sanctions",
         "Event": "Arab Spring supply disruptions & EU/U.S. Iran oil sanctions push prices to a 2012 peak",
         "Onset_Month": 2,
         "Onset_Day": 19,
@@ -307,8 +301,7 @@ ANNUAL_EVENTS_META = [
     {
         "Year": 2014,
         "Category": "YoY Event 2: OPEC+ & U.S. Shale Supply",
-        "Above_Label": "U.S. Shale Glut",
-        "Below_Label": "",
+        "Label": "U.S. Shale Glut",
         "Event": "U.S. shale oil boom & Nov 2014 OPEC price war trigger a multi-year slide through 2016",
         "Onset_Month": 7,
         "Onset_Day": 1,
@@ -321,8 +314,7 @@ ANNUAL_EVENTS_META = [
     {
         "Year": 2020,
         "Category": "YoY Event 1: Macro & Pandemic Demand Shocks",
-        "Above_Label": "",
-        "Below_Label": "COVID-19",
+        "Label": "COVID-19",
         "Event": "COVID-19 pandemic lockdowns trigger a sharp -16.4% annual pump price drop in 2020",
         "Onset_Month": 3,
         "Onset_Day": 13,
@@ -335,8 +327,7 @@ ANNUAL_EVENTS_META = [
     {
         "Year": 2021,
         "Category": "YoY Event 3: Geopolitical Conflicts & Sanctions",
-        "Above_Label": "Russia–Ukraine & SPR",
-        "Below_Label": "",
+        "Label": "Russia–Ukraine & SPR",
         "Event": "Post-lockdown tightening (2021) & Russia–Ukraine War (Feb 2022) drive prices to a 2022 peak",
         "Onset_Month": 2,
         "Onset_Day": 24,
@@ -349,8 +340,7 @@ ANNUAL_EVENTS_META = [
     {
         "Year": 2023,
         "Category": "YoY Event 2: OPEC+ & U.S. Shale Supply",
-        "Above_Label": "Non-OPEC Supply",
-        "Below_Label": "",
+        "Label": "Non-OPEC Supply",
         "Event": "Record U.S. & Americas non-OPEC oil output steadily eases annual prices across 2023–2025",
         "Onset_Month": 4,
         "Onset_Day": 15,
@@ -363,8 +353,7 @@ ANNUAL_EVENTS_META = [
     {
         "Year": 2026,
         "Category": "YoY Event 3: Geopolitical Conflicts & Sanctions",
-        "Above_Label": "Iran War",
-        "Below_Label": "",
+        "Label": "Iran War",
         "Event": "U.S.–Israel war with Iran (begun Feb 28, 2026) & Strait of Hormuz crisis trigger sharp oil and pump price surge",
         "Onset_Month": 2,
         "Onset_Day": 28,
@@ -539,7 +528,6 @@ def load_base_benchmarks() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, fl
         m_bytes = fut_m.result()
         a_bytes = fut_a.result()
 
-    # 1. U.S. National monthly regular retail gasoline prices (required primary series)
     if m_bytes is None:
         m_bytes = _fetch_url_bytes(EIA_MONTHLY_US_URL, timeout=(4.0, 10.0), retries=1)
     monthly_us = pd.read_excel(io.BytesIO(m_bytes), sheet_name="Data 1", skiprows=2)
@@ -554,7 +542,6 @@ def load_base_benchmarks() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, fl
     monthly_us["YearMonth"] = monthly_us["Date"].dt.to_period("M")
     monthly_us["Year"] = monthly_us["Date"].dt.year
 
-    # 2. Monthly BLS CPI-U from FRED (graceful fallback if FRED stalls/throttles)
     if cpi_bytes is not None:
         cpi = pd.read_csv(io.BytesIO(cpi_bytes), na_values=".")
         cpi.columns = ["Date", "CPI"]
@@ -567,13 +554,11 @@ def load_base_benchmarks() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, fl
         cpi = monthly_us[["Date", "YearMonth", "Year"]].copy()
         cpi["CPI"] = 100.0
 
-    # Merge CPI after chronological sort so ffill & latest_cpi always reflect the newest month
     monthly_us = pd.merge(monthly_us, cpi[["YearMonth", "CPI"]], on="YearMonth", how="left")
     monthly_us["CPI"] = monthly_us["CPI"].ffill().bfill().fillna(100.0)
     latest_cpi = float(monthly_us["CPI"].iloc[-1])
     monthly_us["US_Real"] = monthly_us["US_Nominal"] * (latest_cpi / monthly_us["CPI"])
 
-    # 3. U.S. National annual regular retail gasoline prices (with local CSV & monthly synthesis fallbacks)
     annual_us = None
     if a_bytes is not None:
         try:
@@ -876,6 +861,42 @@ def compute_monthly_shock_regime(
         "onset_str": onset_str,
         "window_str": window_str,
     }
+
+
+def compute_annual_leader_position(yr: int, price_map: dict[int, float], y_max: float) -> tuple[float, str, str]:
+    """
+    Compute Monthly-style standoff elevation (Label_Y), vertical placement ('above'|'below'),
+    and horizontal text alignment ('center'|'left'|'right') dynamically for any geography & price basis.
+    """
+    p = price_map[yr]
+    p_prev = price_map.get(yr - 1, p)
+    p_next = price_map.get(yr + 1, p)
+    p_next2 = price_map.get(yr + 2, p_next)
+    cap_top = y_max * 0.925
+
+    if yr == 1997:
+        return round(min(cap_top, max(p, p_prev, p_next) + 0.095 * y_max), 3), "above", "center"
+    if yr == 1999:
+        return round(max(0.08 * y_max, min(p, p_prev) - 0.105 * y_max), 3), "below", "center"
+    if yr == 2005:
+        return round(min(cap_top, max(p, p_next, p_next2) + 0.045 * y_max), 3), "above", "center"
+    if yr == 2008:
+        return round(min(cap_top, p + 0.105 * y_max), 3), "above", "center"
+    if yr == 2011:
+        return round(max(0.22 * y_max, p * 0.42), 3), "below", "center"
+    if yr == 2012:
+        return round(min(cap_top, max(p, p_prev) + 0.11 * y_max), 3), "above", "center"
+    if yr == 2014:
+        return round(min(cap_top, p + 0.08 * y_max), 3), "above", "left"
+    if yr == 2020:
+        return round(max(0.18 * y_max, p - 0.175 * y_max), 3), "below", "center"
+    if yr == 2021:
+        return round(min(cap_top, max(p, p_next * 0.93) + 0.025 * y_max), 3), "above", "right"
+    if yr == 2023:
+        return round(min(cap_top, max(p, p_prev) + 0.04 * y_max), 3), "above", "left"
+    if yr == 2026:
+        return round(min(cap_top, p + 0.08 * y_max), 3), "above", "right"
+    return round(min(cap_top, p + 0.09 * y_max), 3), "above", "center"
 
 
 def compute_annual_inflection_regimes(ann_df: pd.DataFrame) -> list[dict]:
@@ -1196,6 +1217,7 @@ if active_view_tab == seasonal_tab_label:
     y_max_m = float(max(min_y_floor, np.ceil(max_top_both * 2) / 2 + 0.55))
     y_grid_vals = [round(float(v), 1) for v in np.arange(0, y_max_m + 0.01, 0.5)]
     locked_y_scale_m = alt.Scale(domain=[0, y_max_m], nice=False, clamp=True)
+    cat_month_scale = alt.Scale(domain=month_names)
 
     date_span = f"{seasonal_src['Date'].min():%B %Y} - {seasonal_src['Date'].max():%B %Y}"
     subtitle_parts_m = [
@@ -1321,6 +1343,7 @@ if active_view_tab == seasonal_tab_label:
 
     seasonal_layers.append(seasonal_base)
 
+    # Pass axis=None on every overlay layer's X encoding so no ghost top x-axis ever appears
     if show_ci and not is_single_seasonal_year:
         ci_records = [r for r in seasonal_records if r["Count"] > 1 and not pd.isna(r["CI_Low"])]
         ci_data = alt.Data(values=ci_records)
@@ -1328,7 +1351,7 @@ if active_view_tab == seasonal_tab_label:
             alt.Chart(ci_data)
             .mark_rule(color="white", strokeWidth=3.6, opacity=0.85)
             .encode(
-                x=alt.X("Month:N", sort=month_names, scale=alt.Scale(domain=month_names)),
+                x=alt.X("Month:N", sort=month_names, scale=cat_month_scale, axis=None),
                 y=alt.Y("CI_Low:Q", scale=locked_y_scale_m),
                 y2=alt.Y2("CI_High:Q"),
             )
@@ -1337,7 +1360,7 @@ if active_view_tab == seasonal_tab_label:
             alt.Chart(ci_data)
             .mark_rule(color="#111111", strokeWidth=1.8)
             .encode(
-                x=alt.X("Month:N", sort=month_names, scale=alt.Scale(domain=month_names)),
+                x=alt.X("Month:N", sort=month_names, scale=cat_month_scale, axis=None),
                 y=alt.Y("CI_Low:Q", scale=locked_y_scale_m),
                 y2=alt.Y2("CI_High:Q"),
                 tooltip=[
@@ -1350,22 +1373,22 @@ if active_view_tab == seasonal_tab_label:
         ci_cap_top_halo = (
             alt.Chart(ci_data)
             .mark_tick(color="white", thickness=3.6, size=14, opacity=0.85)
-            .encode(x=alt.X("Month:N", sort=month_names, scale=alt.Scale(domain=month_names)), y=alt.Y("CI_High:Q", scale=locked_y_scale_m))
+            .encode(x=alt.X("Month:N", sort=month_names, scale=cat_month_scale, axis=None), y=alt.Y("CI_High:Q", scale=locked_y_scale_m))
         )
         ci_cap_top = (
             alt.Chart(ci_data)
             .mark_tick(color="#111111", thickness=1.8, size=12)
-            .encode(x=alt.X("Month:N", sort=month_names, scale=alt.Scale(domain=month_names)), y=alt.Y("CI_High:Q", scale=locked_y_scale_m))
+            .encode(x=alt.X("Month:N", sort=month_names, scale=cat_month_scale, axis=None), y=alt.Y("CI_High:Q", scale=locked_y_scale_m))
         )
         ci_cap_bot_halo = (
             alt.Chart(ci_data)
             .mark_tick(color="white", thickness=3.6, size=14, opacity=0.85)
-            .encode(x=alt.X("Month:N", sort=month_names, scale=alt.Scale(domain=month_names)), y=alt.Y("CI_Low:Q", scale=locked_y_scale_m))
+            .encode(x=alt.X("Month:N", sort=month_names, scale=cat_month_scale, axis=None), y=alt.Y("CI_Low:Q", scale=locked_y_scale_m))
         )
         ci_cap_bot = (
             alt.Chart(ci_data)
             .mark_tick(color="#111111", thickness=1.8, size=12)
-            .encode(x=alt.X("Month:N", sort=month_names, scale=alt.Scale(domain=month_names)), y=alt.Y("CI_Low:Q", scale=locked_y_scale_m))
+            .encode(x=alt.X("Month:N", sort=month_names, scale=cat_month_scale, axis=None), y=alt.Y("CI_Low:Q", scale=locked_y_scale_m))
         )
         seasonal_layers.extend([
             ci_stem_halo,
@@ -1444,7 +1467,7 @@ if active_view_tab == seasonal_tab_label:
             alt.Chart(alt.Data(values=seasonal_event_points))
             .mark_rule(color="#888888", strokeDash=[2, 2], strokeWidth=1.1)
             .encode(
-                x=alt.X("Month:N", sort=month_names, scale=alt.Scale(domain=month_names)),
+                x=alt.X("Month:N", sort=month_names, scale=cat_month_scale, axis=None),
                 y=alt.Y("anchor_top:Q", scale=locked_y_scale_m),
                 y2=alt.Y2("y_pos:Q"),
             )
@@ -1459,7 +1482,7 @@ if active_view_tab == seasonal_tab_label:
             alt.Chart(alt.Data(values=span_records))
             .mark_line(color="#d95f02", strokeWidth=2.3, strokeDash=[5, 3])
             .encode(
-                x=alt.X("Month:N", sort=month_names, scale=alt.Scale(domain=month_names)),
+                x=alt.X("Month:N", sort=month_names, scale=cat_month_scale, axis=None),
                 y=alt.Y("span_y:Q", scale=locked_y_scale_m),
                 tooltip=[alt.Tooltip("Detail:N", title="Seasonal Driver")],
             )
@@ -1469,7 +1492,7 @@ if active_view_tab == seasonal_tab_label:
             alt.Chart(alt.Data(values=[{"Month": month_names[5], "span_y": y_summer_band, "Text": "Summer Driving Season (May–Aug)"}]))
             .mark_text(dy=-11, dx=22, fontSize=10.5, fontWeight="bold", color="#111111")
             .encode(
-                x=alt.X("Month:N", sort=month_names, scale=alt.Scale(domain=month_names)),
+                x=alt.X("Month:N", sort=month_names, scale=cat_month_scale, axis=None),
                 y=alt.Y("span_y:Q", scale=locked_y_scale_m),
                 text="Text:N",
             )
@@ -1479,7 +1502,7 @@ if active_view_tab == seasonal_tab_label:
             alt.Chart(alt.Data(values=seasonal_event_points))
             .mark_point(shape="diamond", size=135, filled=True, stroke="white", strokeWidth=1.2)
             .encode(
-                x=alt.X("Month:N", sort=month_names, scale=alt.Scale(domain=month_names)),
+                x=alt.X("Month:N", sort=month_names, scale=cat_month_scale, axis=None),
                 y=alt.Y("y_pos:Q", scale=locked_y_scale_m),
                 fill=alt.Fill(
                     "Event_Type:N",
@@ -1504,7 +1527,7 @@ if active_view_tab == seasonal_tab_label:
             alt.Chart(alt.Data(values=[r for r in seasonal_event_points if r["Tag"]]))
             .mark_text(dy=-11, fontSize=10.5, fontWeight="bold", color="#111111")
             .encode(
-                x=alt.X("Month:N", sort=month_names, scale=alt.Scale(domain=month_names)),
+                x=alt.X("Month:N", sort=month_names, scale=cat_month_scale, axis=None),
                 y=alt.Y("y_pos:Q", scale=locked_y_scale_m),
                 text="Tag:N",
             )
@@ -1784,7 +1807,7 @@ else:
     ].to_dict(orient="records")
 
     max_both_curves = float(max(ann["Price"].max(), ann["US_Price"].max()))
-    y_max_a = float(np.ceil(max_both_curves * 2) / 2 + 0.25)
+    y_max_a = float(np.ceil(max_both_curves * 2) / 2 + 0.55)
     locked_y_scale_a = alt.Scale(domain=[0, y_max_a], nice=False, clamp=True)
     all_year_strs = ann["Year_Str"].tolist()
     tick_step = max(3, int(math.ceil((end_year - start_year + 1) / 14)))
@@ -1924,19 +1947,19 @@ else:
         sel_vline = (
             alt.Chart(sel_data)
             .mark_rule(color="#111111", strokeDash=[3, 3], strokeWidth=1.5, opacity=0.8)
-            .encode(x=alt.X("Year_Str:O", scale=shared_x_scale))
+            .encode(x=alt.X("Year_Str:O", scale=shared_x_scale, axis=None))
         )
         if is_us_benchmark:
             sel_halo = (
                 alt.Chart(sel_data)
                 .mark_circle(size=230, color="#d95f02", opacity=0.25)
-                .encode(x=alt.X("Year_Str:O", scale=shared_x_scale), y=alt.Y("Price:Q", scale=locked_y_scale_a))
+                .encode(x=alt.X("Year_Str:O", scale=shared_x_scale, axis=None), y=alt.Y("Price:Q", scale=locked_y_scale_a))
             )
             sel_dot = (
                 alt.Chart(sel_data)
                 .mark_circle(size=120, color="#d95f02", stroke="white", strokeWidth=1.6)
                 .encode(
-                    x=alt.X("Year_Str:O", scale=shared_x_scale),
+                    x=alt.X("Year_Str:O", scale=shared_x_scale, axis=None),
                     y=alt.Y("Price:Q", scale=locked_y_scale_a),
                     tooltip=ann_tooltips,
                 )
@@ -1947,7 +1970,7 @@ else:
                 alt.Chart(sel_data)
                 .mark_circle(size=120, color="#111111", stroke="white", strokeWidth=1.6)
                 .encode(
-                    x=alt.X("Year_Str:O", scale=shared_x_scale),
+                    x=alt.X("Year_Str:O", scale=shared_x_scale, axis=None),
                     y=alt.Y("Price:Q", scale=locked_y_scale_a),
                     tooltip=ann_tooltips,
                 )
@@ -1983,14 +2006,28 @@ else:
         )
         events_merged = pd.merge(events_merged, regime_meta_df, on="Year", how="left")
         events_merged["YoY_Pct_Plot"] = events_merged["YoY_Pct"].fillna(0.0)
+
+        price_lookup = dict(zip(ann["Year"].astype(int), ann["Price"].astype(float)))
+        label_ys, sides, aligns = [], [], []
+        for yr_val in events_merged["Year"].astype(int):
+            ly, sd, al = compute_annual_leader_position(yr_val, price_lookup, y_max_a)
+            label_ys.append(ly)
+            sides.append(sd)
+            aligns.append(al)
+        events_merged["Label_Y"] = label_ys
+        events_merged["Side"] = sides
+        events_merged["Align"] = aligns
+
         event_records = events_merged[
             [
                 "Year_Str",
                 "Category",
-                "Above_Label",
-                "Below_Label",
+                "Label",
                 "Event",
                 "Price",
+                "Label_Y",
+                "Side",
+                "Align",
                 "Price_Fmt",
                 "YoY_Diff_Fmt",
                 "YoY_Pct_Fmt",
@@ -2000,11 +2037,20 @@ else:
             ]
         ].to_dict(orient="records")
 
+        event_tooltips = [
+            alt.Tooltip("Year_Str:N", title="Onset Year"),
+            alt.Tooltip("Window_Fmt:N", title="Inflection Window"),
+            alt.Tooltip("Swing_Fmt:N", title=f"{geo_short} Regime Swing"),
+            alt.Tooltip("Category:N", title="Driver Category"),
+            alt.Tooltip("Event:N", title="Historical Driver"),
+        ]
+
+        # Subtle colored dashed onset line
         event_rules = (
             alt.Chart(alt.Data(values=event_records))
-            .mark_rule(strokeDash=[3, 3], strokeWidth=1.2, opacity=0.68)
+            .mark_rule(strokeDash=[3, 3], strokeWidth=1.1, opacity=0.55)
             .encode(
-                x=alt.X("Year_Str:O", scale=shared_x_scale),
+                x=alt.X("Year_Str:O", scale=shared_x_scale, axis=None),
                 color=alt.Color(
                     "Category:N",
                     scale=alt.Scale(domain=EVENT_CATEGORIES, range=EVENT_COLORS),
@@ -2013,91 +2059,103 @@ else:
             )
         )
 
-        event_diamonds = (
+        # Monthly-style dotted grey leader line from onset point on curve to clean whitespace Label_Y
+        event_leader_lines = (
             alt.Chart(alt.Data(values=event_records))
-            .mark_point(shape="diamond", size=140, filled=True, stroke="white", strokeWidth=1.2)
+            .mark_rule(color="#888888", strokeDash=[2, 2], strokeWidth=1.15)
             .encode(
-                x=alt.X("Year_Str:O", scale=shared_x_scale),
+                x=alt.X("Year_Str:O", scale=shared_x_scale, axis=None),
+                y=alt.Y("Price:Q", scale=locked_y_scale_a),
+                y2=alt.Y2("Label_Y:Q"),
+            )
+        )
+
+        # Onset diamond on the price curve
+        event_curve_diamonds = (
+            alt.Chart(alt.Data(values=event_records))
+            .mark_point(shape="diamond", size=95, filled=True, stroke="white", strokeWidth=1.0)
+            .encode(
+                x=alt.X("Year_Str:O", scale=shared_x_scale, axis=None),
                 y=alt.Y("Price:Q", scale=locked_y_scale_a),
                 color=alt.Color(
                     "Category:N",
                     scale=alt.Scale(domain=EVENT_CATEGORIES, range=EVENT_COLORS),
                     legend=None,
                 ),
-                tooltip=[
-                    alt.Tooltip("Year_Str:N", title="Onset Year"),
-                    alt.Tooltip("Window_Fmt:N", title="Inflection Window"),
-                    alt.Tooltip("Swing_Fmt:N", title=f"{geo_short} Regime Swing"),
-                    alt.Tooltip("Category:N", title="Driver Category"),
-                    alt.Tooltip("Event:N", title="Historical Driver"),
-                ],
+                tooltip=event_tooltips,
             )
         )
 
-        above_center_records = [r for r in event_records if r["Above_Label"] and r["Year_Str"] not in (str(end_year), "2023")]
-        above_right_edge_records = [r for r in event_records if r["Above_Label"] and r["Year_Str"] == str(end_year)]
-        above_left_align_records = [r for r in event_records if r["Above_Label"] and r["Year_Str"] == "2023"]
-        below_center_records = [r for r in event_records if r["Below_Label"] and r["Year_Str"] != "2011"]
-        below_right_align_records = [r for r in event_records if r["Below_Label"] and r["Year_Str"] == "2011"]
+        # Monthly-style diamond marker at the leader-line tip in open whitespace
+        event_tip_diamonds = (
+            alt.Chart(alt.Data(values=event_records))
+            .mark_point(shape="diamond", size=135, filled=True, stroke="white", strokeWidth=1.2)
+            .encode(
+                x=alt.X("Year_Str:O", scale=shared_x_scale, axis=None),
+                y=alt.Y("Label_Y:Q", scale=locked_y_scale_a),
+                color=alt.Color(
+                    "Category:N",
+                    scale=alt.Scale(domain=EVENT_CATEGORIES, range=EVENT_COLORS),
+                    legend=None,
+                ),
+                tooltip=event_tooltips,
+            )
+        )
 
-        above_texts = (
+        above_center_records = [r for r in event_records if r["Side"] == "above" and r["Align"] == "center"]
+        above_right_records = [r for r in event_records if r["Side"] == "above" and r["Align"] == "right"]
+        above_left_records = [r for r in event_records if r["Side"] == "above" and r["Align"] == "left"]
+        below_center_records = [r for r in event_records if r["Side"] == "below"]
+
+        above_center_texts = (
             alt.Chart(alt.Data(values=above_center_records))
-            .mark_text(dy=-11, fontSize=9.8, fontWeight="bold", color="#111111")
+            .mark_text(dy=-11, fontSize=10.0, fontWeight="bold", color="#111111")
             .encode(
-                x=alt.X("Year_Str:O", scale=shared_x_scale),
-                y=alt.Y("Price:Q", scale=locked_y_scale_a),
-                text="Above_Label:N",
+                x=alt.X("Year_Str:O", scale=shared_x_scale, axis=None),
+                y=alt.Y("Label_Y:Q", scale=locked_y_scale_a),
+                text="Label:N",
             )
         )
 
-        above_right_edge_texts = (
-            alt.Chart(alt.Data(values=above_right_edge_records))
-            .mark_text(dy=-11, dx=4, align="right", fontSize=9.8, fontWeight="bold", color="#111111")
+        above_right_texts = (
+            alt.Chart(alt.Data(values=above_right_records))
+            .mark_text(dy=-11, dx=4, align="right", fontSize=10.0, fontWeight="bold", color="#111111")
             .encode(
-                x=alt.X("Year_Str:O", scale=shared_x_scale),
-                y=alt.Y("Price:Q", scale=locked_y_scale_a),
-                text="Above_Label:N",
+                x=alt.X("Year_Str:O", scale=shared_x_scale, axis=None),
+                y=alt.Y("Label_Y:Q", scale=locked_y_scale_a),
+                text="Label:N",
             )
         )
 
-        above_left_align_texts = (
-            alt.Chart(alt.Data(values=above_left_align_records))
-            .mark_text(dy=-11, dx=-4, align="left", fontSize=9.8, fontWeight="bold", color="#111111")
+        above_left_texts = (
+            alt.Chart(alt.Data(values=above_left_records))
+            .mark_text(dy=-11, dx=-4, align="left", fontSize=10.0, fontWeight="bold", color="#111111")
             .encode(
-                x=alt.X("Year_Str:O", scale=shared_x_scale),
-                y=alt.Y("Price:Q", scale=locked_y_scale_a),
-                text="Above_Label:N",
+                x=alt.X("Year_Str:O", scale=shared_x_scale, axis=None),
+                y=alt.Y("Label_Y:Q", scale=locked_y_scale_a),
+                text="Label:N",
             )
         )
 
-        below_texts = (
+        below_center_texts = (
             alt.Chart(alt.Data(values=below_center_records))
-            .mark_text(dy=16, fontSize=9.8, fontWeight="bold", color="#111111")
+            .mark_text(dy=15, fontSize=10.0, fontWeight="bold", color="#111111")
             .encode(
-                x=alt.X("Year_Str:O", scale=shared_x_scale),
-                y=alt.Y("Price:Q", scale=locked_y_scale_a),
-                text="Below_Label:N",
-            )
-        )
-
-        below_right_align_texts = (
-            alt.Chart(alt.Data(values=below_right_align_records))
-            .mark_text(dy=16, dx=4, align="right", fontSize=9.8, fontWeight="bold", color="#111111")
-            .encode(
-                x=alt.X("Year_Str:O", scale=shared_x_scale),
-                y=alt.Y("Price:Q", scale=locked_y_scale_a),
-                text="Below_Label:N",
+                x=alt.X("Year_Str:O", scale=shared_x_scale, axis=None),
+                y=alt.Y("Label_Y:Q", scale=locked_y_scale_a),
+                text="Label:N",
             )
         )
 
         annual_layers.extend([
             event_rules,
-            event_diamonds,
-            above_texts,
-            above_right_edge_texts,
-            above_left_align_texts,
-            below_texts,
-            below_right_align_texts,
+            event_leader_lines,
+            event_curve_diamonds,
+            event_tip_diamonds,
+            above_center_texts,
+            above_right_texts,
+            above_left_texts,
+            below_center_texts,
         ])
 
     if is_single_annual_year:
@@ -2118,7 +2176,7 @@ else:
         .resolve_scale(x="independent", color="independent", y="shared")
         .properties(
             width=640,
-            height=370,
+            height=380,
             title=alt.TitleParams(
                 text=annual_chart_title,
                 subtitle=subtitle_a,
@@ -2191,9 +2249,9 @@ else:
     if show_annual_events:
         yoy_event_rules = (
             alt.Chart(alt.Data(values=event_records))
-            .mark_rule(strokeDash=[3, 3], strokeWidth=1.2, opacity=0.68)
+            .mark_rule(strokeDash=[3, 3], strokeWidth=1.1, opacity=0.55)
             .encode(
-                x=alt.X("Year_Str:O", scale=shared_x_scale),
+                x=alt.X("Year_Str:O", scale=shared_x_scale, axis=None),
                 color=alt.Color(
                     "Category:N",
                     scale=alt.Scale(domain=EVENT_CATEGORIES, range=EVENT_COLORS),
@@ -2205,7 +2263,7 @@ else:
             alt.Chart(alt.Data(values=event_records))
             .mark_point(shape="diamond", size=115, filled=True, stroke="white", strokeWidth=1.1)
             .encode(
-                x=alt.X("Year_Str:O", scale=shared_x_scale),
+                x=alt.X("Year_Str:O", scale=shared_x_scale, axis=None),
                 y=alt.Y("YoY_Pct_Plot:Q"),
                 color=alt.Color(
                     "Category:N",
