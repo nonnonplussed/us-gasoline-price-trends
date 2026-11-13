@@ -1,3 +1,4 @@
+import calendar
 import io
 import math
 import os
@@ -204,6 +205,198 @@ STATE_INFO = {
     "WI": ("Wisconsin", "R20"),
     "WY": ("Wyoming", "R40"),
 }
+
+EVENT_CATEGORIES = [
+    "YoY Event 1: Macro & Pandemic Demand Shocks",
+    "YoY Event 2: OPEC+ & U.S. Shale Supply",
+    "YoY Event 3: Geopolitical Conflicts & Sanctions",
+    "YoY Event 4: SPR Releases & Blending Policy",
+    "Monthly Event 3: Gulf Coast Hurricanes",
+]
+EVENT_COLORS = ["#d95f02", "#7570b3", "#e7298a", "#66a61e", "#e6ab02"]
+EVENT_COLOR_MAP = dict(zip(EVENT_CATEGORIES, EVENT_COLORS))
+
+# Canonical historical shock metadata shared across Annual and Monthly single-year views
+ANNUAL_EVENTS_META = [
+    {
+        "Year": 1998,
+        "Category": "YoY Event 1: Macro & Pandemic Demand Shocks",
+        "Above_Label": "Asian Crisis",
+        "Below_Label": "",
+        "Event": "Asian Financial Crisis slumps global oil demand (34-year price low)",
+        "Onset_Month": 10,
+        "Onset_Day": 1,
+        "Monthly_Scan_End": 12,
+        "Monthly_Dir": "trough",
+        "Monthly_Pill": "Asian Crisis (Q4)",
+        "Annual_Regime": False,
+    },
+    {
+        "Year": 2000,
+        "Category": "YoY Event 2: OPEC+ & U.S. Shale Supply",
+        "Above_Label": "OPEC Cuts",
+        "Below_Label": "",
+        "Event": "Coordinated OPEC production cuts drive +30.6% annual price surge",
+        "Onset_Month": 3,
+        "Onset_Day": 27,
+        "Monthly_Scan_End": 8,
+        "Monthly_Dir": "peak",
+        "Monthly_Pill": "OPEC Cuts (Mar 27)",
+        "Annual_Regime": True,
+        "Regime_Start_Hint": 1999,
+        "Regime_Scan_End": 2001,
+        "Regime_Dir": "peak",
+        "Regime_Pill": "OPEC Cuts",
+        "Regime_Tier": 1,
+    },
+    {
+        "Year": 2005,
+        "Category": "Monthly Event 3: Gulf Coast Hurricanes",
+        "Above_Label": "Katrina & Rita",
+        "Below_Label": "",
+        "Event": "Hurricanes Katrina & Rita knock Gulf Coast offshore rigs and refineries offline",
+        "Onset_Month": 8,
+        "Onset_Day": 29,
+        "Monthly_Scan_End": 10,
+        "Monthly_Dir": "peak",
+        "Monthly_Pill": "Katrina & Rita (Aug 29)",
+        "Annual_Regime": False,
+    },
+    {
+        "Year": 2008,
+        "Category": "YoY Event 1: Macro & Pandemic Demand Shocks",
+        "Above_Label": "Financial Crisis",
+        "Below_Label": "",
+        "Event": "Global Financial Crisis spike in 2008 followed by -27.5% crash in 2009",
+        "Onset_Month": 7,
+        "Onset_Day": 15,
+        "Monthly_Scan_End": 12,
+        "Monthly_Dir": "trough",
+        "Monthly_Pill": "Financial Crisis (Jul–Dec)",
+        "Annual_Regime": True,
+        "Regime_Start_Hint": 2007,
+        "Regime_Scan_End": 2009,
+        "Regime_Dir": "peak",
+        "Regime_Pill": "GFC Spike",
+        "Regime_Tier": 1,
+    },
+    {
+        "Year": 2011,
+        "Category": "YoY Event 4: SPR Releases & Blending Policy",
+        "Above_Label": "",
+        "Below_Label": "SPR Release",
+        "Event": "Emergency 30.6M-bbl Strategic Petroleum Reserve (SPR) drawdown & ethanol blending mandates",
+        "Onset_Month": 6,
+        "Onset_Day": 23,
+        "Monthly_Scan_End": 12,
+        "Monthly_Dir": "trough",
+        "Monthly_Pill": "SPR Release (Jun 23)",
+        "Annual_Regime": False,
+    },
+    {
+        "Year": 2012,
+        "Category": "YoY Event 3: Geopolitical Conflicts & Sanctions",
+        "Above_Label": "Libya / Iran Sanctions",
+        "Below_Label": "",
+        "Event": "Arab Spring, Libyan civil war supply outage & Iran oil sanctions",
+        "Onset_Month": 2,
+        "Onset_Day": 19,
+        "Monthly_Scan_End": 6,
+        "Monthly_Dir": "peak",
+        "Monthly_Pill": "Iran Sanctions (Feb 19)",
+        "Annual_Regime": True,
+        "Regime_Start_Hint": 2011,
+        "Regime_Scan_End": 2013,
+        "Regime_Dir": "peak",
+        "Regime_Pill": "Sanctions / SPR",
+        "Regime_Tier": 1,
+    },
+    {
+        "Year": 2015,
+        "Category": "YoY Event 2: OPEC+ & U.S. Shale Supply",
+        "Above_Label": "U.S. Shale Glut",
+        "Below_Label": "",
+        "Event": "U.S. shale oil boom & OPEC price war trigger -27.7% annual drop",
+        "Onset_Month": 7,
+        "Onset_Day": 1,
+        "Monthly_Scan_End": 12,
+        "Monthly_Dir": "trough",
+        "Monthly_Pill": "U.S. Shale Glut (H2)",
+        "Annual_Regime": True,
+        "Regime_Start_Hint": 2014,
+        "Regime_Scan_End": 2017,
+        "Regime_Dir": "trough",
+        "Regime_Pill": "U.S. Shale Glut",
+        "Regime_Tier": 1,
+    },
+    {
+        "Year": 2020,
+        "Category": "YoY Event 1: Macro & Pandemic Demand Shocks",
+        "Above_Label": "",
+        "Below_Label": "COVID-19",
+        "Event": "COVID-19 lockdown drop (-16.7%) followed by 2021 reopening surge (+38.7%)",
+        "Onset_Month": 3,
+        "Onset_Day": 13,
+        "Monthly_Scan_End": 6,
+        "Monthly_Dir": "trough",
+        "Monthly_Pill": "COVID-19 (Mar 13)",
+        "Annual_Regime": True,
+        "Regime_Start_Hint": 2020,
+        "Regime_Scan_End": 2020,
+        "Regime_Dir": "trough",
+        "Regime_Pill": "COVID-19",
+        "Regime_Tier": 2,
+    },
+    {
+        "Year": 2022,
+        "Category": "YoY Event 3: Geopolitical Conflicts & Sanctions",
+        "Above_Label": "Russia–Ukraine & SPR",
+        "Below_Label": "",
+        "Event": "Russia–Ukraine War supply rerouting cushioned by 180M-bbl SPR release",
+        "Onset_Month": 2,
+        "Onset_Day": 24,
+        "Monthly_Scan_End": 8,
+        "Monthly_Dir": "peak",
+        "Monthly_Pill": "Russia–Ukraine (Feb 24)",
+        "Annual_Regime": True,
+        "Regime_Start_Hint": 2021,
+        "Regime_Scan_End": 2023,
+        "Regime_Dir": "peak",
+        "Regime_Pill": "Ukraine & SPR",
+        "Regime_Tier": 1,
+    },
+    {
+        "Year": 2024,
+        "Category": "YoY Event 2: OPEC+ & U.S. Shale Supply",
+        "Above_Label": "Non-OPEC Supply",
+        "Below_Label": "",
+        "Event": "Record U.S. & Americas oil output eases annual prices across 2023–2025",
+        "Onset_Month": 4,
+        "Onset_Day": 15,
+        "Monthly_Scan_End": 12,
+        "Monthly_Dir": "trough",
+        "Monthly_Pill": "Non-OPEC Supply (Apr–Dec)",
+        "Annual_Regime": False,
+    },
+    {
+        "Year": 2026,
+        "Category": "YoY Event 3: Geopolitical Conflicts & Sanctions",
+        "Above_Label": "Iran War",
+        "Below_Label": "",
+        "Event": "U.S.–Israel war with Iran (begun Feb 28, 2026) & Strait of Hormuz crisis trigger sharp oil and pump price surge",
+        "Onset_Month": 2,
+        "Onset_Day": 28,
+        "Monthly_Scan_End": 7,
+        "Monthly_Dir": "peak",
+        "Monthly_Pill": "Iran War (Feb 28)",
+        "Annual_Regime": True,
+        "Regime_Start_Hint": 2026,
+        "Regime_Scan_End": 2026,
+        "Regime_Dir": "peak",
+        "Regime_Pill": "Iran War",
+        "Regime_Tier": 1,
+    },
+]
 
 
 def build_geography_options() -> tuple[list[str], dict[str, dict]]:
@@ -658,6 +851,114 @@ def _fmt_signed_pct(v: float) -> str:
     return "—" if pd.isna(v) else f"{v:+.1f}%"
 
 
+def compute_monthly_shock_regime(
+    sel_yr: int,
+    summary_df: pd.DataFrame,
+    y_max_m: float,
+    month_full_names: list[str],
+) -> dict | None:
+    """
+    Compute Option 2 Shaded Shock Regime geometry for a single year in the Monthly view:
+      - Fractional-day x_start on numeric band-aligned axis [0.0, 12.08]
+      - Data-driven x_end through the selected geography's local peak/trough month
+      - Base pill badge coordinates (x_badge, y_badge) at 0.08 * y_max_m
+    """
+    ev = next((item for item in ANNUAL_EVENTS_META if item["Year"] == sel_yr), None)
+    if ev is None:
+        return None
+
+    m_onset = int(ev["Onset_Month"])
+    d_onset = int(ev["Onset_Day"])
+    days_in_m = calendar.monthrange(sel_yr, m_onset)[1]
+    # Aligns with Altair band scale: domain=12 months, paddingInner=0.16, paddingOuter=0.12 (total=12.08)
+    x_start = (m_onset - 1) + 0.04 + ((d_onset - 1) / float(days_in_m))
+
+    scan_start = m_onset if d_onset <= 20 else min(12, m_onset + 1)
+    scan_end = max(scan_start, int(ev["Monthly_Scan_End"]))
+    sub = summary_df.loc[scan_start:scan_end, "Value"].dropna()
+    if len(sub) > 0:
+        end_month = int(sub.idxmax() if ev["Monthly_Dir"] == "peak" else sub.idxmin())
+    else:
+        end_month = scan_end
+    x_end = min(12.08, float(end_month))
+
+    pill_text = f"◆ {ev['Monthly_Pill']}"
+    pill_width = max(108, int(len(pill_text) * 6.5 + 16))
+    x_badge = float(np.clip(x_start + 0.54, 1.45, 10.60))
+    y_badge = round(0.08 * y_max_m, 3)
+
+    onset_str = f"{month_full_names[m_onset - 1][:3]} {d_onset}, {sel_yr}"
+    window_str = f"{onset_str} → {month_full_names[end_month - 1][:3]} {sel_yr}"
+
+    return {
+        "x_start": round(x_start, 4),
+        "x_end": round(max(x_start + 0.35, x_end), 4),
+        "x_badge": round(x_badge, 4),
+        "y_badge": y_badge,
+        "pill_text": pill_text,
+        "pill_width": pill_width,
+        "color": EVENT_COLOR_MAP[ev["Category"]],
+        "category": ev["Category"],
+        "event": ev["Event"],
+        "onset_str": onset_str,
+        "window_str": window_str,
+    }
+
+
+def compute_annual_inflection_regimes(ann_df: pd.DataFrame, y_max_a: float) -> list[dict]:
+    """
+    Compute Option A Data-Driven Inflection Windows for multi-year regimes on the Annual chart.
+    Scans each geography's annual curve from onset to its local peak or trough so shaded bands
+    adapt dynamically to state/regional turning points.
+    """
+    avail_years = set(ann_df["Year"].astype(int))
+    price_by_yr = dict(zip(ann_df["Year"].astype(int), ann_df["Price"].astype(float)))
+    regimes: list[dict] = []
+
+    for ev in ANNUAL_EVENTS_META:
+        if not ev.get("Annual_Regime", False):
+            continue
+        start_hint = int(ev["Regime_Start_Hint"])
+        scan_end = int(ev["Regime_Scan_End"])
+        cand_years = [y for y in range(start_hint, scan_end + 1) if y in avail_years]
+        if not cand_years:
+            continue
+
+        start_yr = cand_years[0]
+        if ev["Regime_Dir"] == "peak":
+            end_yr = max(cand_years, key=lambda y: price_by_yr[y])
+        else:
+            end_yr = min(cand_years, key=lambda y: price_by_yr[y])
+
+        p0 = price_by_yr[start_yr]
+        p1 = price_by_yr[end_yr]
+        pct_swing = ((p1 - p0) / p0) * 100.0 if p0 > 0 else 0.0
+        span_lbl = f"({start_yr})" if start_yr == end_yr else f"({start_yr}–{end_yr})"
+        pill_lines = [ev["Regime_Pill"], span_lbl]
+        pill_width = max(72, int(max(len(line) for line in pill_lines) * 6.3 + 14))
+        tier = int(ev.get("Regime_Tier", 1))
+        y_pill = round((0.085 if tier == 1 else 0.175) * y_max_a, 3)
+
+        regimes.append({
+            "Start_Year_Str": str(start_yr),
+            "End_Year_Str": str(end_yr),
+            "Pill_Lines": pill_lines,
+            "Pill_Width": pill_width,
+            "Y_Pill": y_pill,
+            "Color": EVENT_COLOR_MAP[ev["Category"]],
+            "Category": ev["Category"],
+            "Event": ev["Event"],
+            "Regime_Name": f"{ev['Regime_Pill']} {span_lbl}",
+            "Swing_Fmt": (
+                f"${p1:.2f}/gal"
+                if start_yr == end_yr
+                else f"${p0:.2f} → ${p1:.2f} ({pct_swing:+.1f}%)"
+            ),
+        })
+
+    return regimes
+
+
 # ==============================================================================
 # TOP CONTROL BAR: GEOGRAPHY DROPDOWN, PRICE BASIS, CENTRAL TENDENCY & OVERLAYS
 # ==============================================================================
@@ -764,7 +1065,7 @@ with sub_col2:
         "Annual",
         value=True,
         key="annual_events_toggle",
-        help="Hurricanes, macro shocks, OPEC/shale, geopolitics & SPR releases",
+        help="Hurricanes, macro shocks, OPEC/shale, geopolitics & SPR releases (also shown in single-year Monthly view)",
     )
 with sub_col3:
     is_median = st.toggle(
@@ -1019,7 +1320,33 @@ if active_view_tab == seasonal_tab_label:
         )
     )
 
-    seasonal_layers = [seasonal_base]
+    # Option 2: Shaded Shock Regime + Base Pill Badge in single-year Monthly view (tied to Annual toggle)
+    monthly_shock = (
+        compute_monthly_shock_regime(sel_yr_m, summary, y_max_m, month_full_names)
+        if (show_annual_events and is_single_seasonal_year and sel_yr_m is not None)
+        else None
+    )
+
+    seasonal_layers = []
+    if monthly_shock is not None:
+        shock_x_scale = alt.Scale(domain=[0.0, 12.08], nice=False, clamp=True)
+        shock_data = alt.Data(values=[monthly_shock])
+        shock_band_rect = (
+            alt.Chart(shock_data)
+            .mark_rect(color=monthly_shock["color"], opacity=0.085)
+            .encode(
+                x=alt.X("x_start:Q", scale=shock_x_scale, axis=None),
+                x2=alt.X2("x_end:Q"),
+            )
+        )
+        shock_onset_rule = (
+            alt.Chart(shock_data)
+            .mark_rule(color=monthly_shock["color"], strokeDash=[4, 3], strokeWidth=1.5, opacity=0.88)
+            .encode(x=alt.X("x_start:Q", scale=shock_x_scale, axis=None))
+        )
+        seasonal_layers.extend([shock_band_rect, shock_onset_rule])
+
+    seasonal_layers.append(seasonal_base)
 
     if show_ci and not is_single_seasonal_year:
         ci_records = [r for r in seasonal_records if r["Count"] > 1 and not pd.isna(r["CI_Low"])]
@@ -1212,6 +1539,44 @@ if active_view_tab == seasonal_tab_label:
 
         seasonal_layers.extend([leader_lines, span_line, span_label, event_markers, event_labels])
 
+    if monthly_shock is not None:
+        shock_x_scale = alt.Scale(domain=[0.0, 12.08], nice=False, clamp=True)
+        shock_data = alt.Data(values=[monthly_shock])
+        shock_tooltips = [
+            alt.Tooltip("onset_str:N", title="Shock Onset"),
+            alt.Tooltip("window_str:N", title="Acute Shock Window"),
+            alt.Tooltip("category:N", title="Driver Category"),
+            alt.Tooltip("event:N", title="Historical Event"),
+        ]
+        shock_badge_bg = (
+            alt.Chart(shock_data)
+            .mark_rect(
+                width=monthly_shock["pill_width"],
+                height=22,
+                cornerRadius=5,
+                fill="white",
+                stroke=monthly_shock["color"],
+                strokeWidth=1.2,
+                opacity=0.96,
+            )
+            .encode(
+                x=alt.X("x_badge:Q", scale=shock_x_scale, axis=None),
+                y=alt.Y("y_badge:Q", scale=locked_y_scale_m),
+                tooltip=shock_tooltips,
+            )
+        )
+        shock_badge_txt = (
+            alt.Chart(shock_data)
+            .mark_text(fontSize=10.0, fontWeight="bold", color="#111111")
+            .encode(
+                x=alt.X("x_badge:Q", scale=shock_x_scale, axis=None),
+                y=alt.Y("y_badge:Q", scale=locked_y_scale_m),
+                text="pill_text:N",
+                tooltip=shock_tooltips,
+            )
+        )
+        seasonal_layers.extend([shock_badge_bg, shock_badge_txt])
+
     seasonal_title_prefix = f"{geo_short} {stat_noun}" if not is_us_benchmark else stat_noun
     seasonal_chart_title = (
         f"{seasonal_title_prefix} Price of Unleaded Regular Gasoline by Month ({sel_yr_m})"
@@ -1220,7 +1585,7 @@ if active_view_tab == seasonal_tab_label:
     )
     seasonal_chart = (
         alt.layer(*seasonal_layers)
-        .resolve_scale(color="independent", y="shared")
+        .resolve_scale(x="independent", color="independent", y="shared")
         .properties(
             height=460,
             title=alt.TitleParams(
@@ -1478,6 +1843,7 @@ else:
         line={"color": "#25858e", "strokeWidth": 2.5},
         color="#25858e",
         opacity=0.10 if is_single_annual_year else 0.16,
+        tooltip=None,
     ).encode(
         y=alt.Y(
             "Price:Q",
@@ -1544,6 +1910,29 @@ else:
         )
         annual_layers.extend([ci_band_rect, ci_upper_rule, ci_lower_rule])
 
+    # Option A: Data-Driven Inflection Windows for multi-year regimes (placed beneath curve)
+    annual_regimes = compute_annual_inflection_regimes(ann, y_max_a) if show_annual_events else []
+    if annual_regimes:
+        regime_data = alt.Data(values=annual_regimes)
+        regime_bands = (
+            alt.Chart(regime_data)
+            .mark_rect(opacity=0.10)
+            .encode(
+                x=alt.X("Start_Year_Str:O", scale=shared_x_scale),
+                x2=alt.X2("End_Year_Str:O"),
+                color=alt.Color("Color:N", scale=None),
+            )
+        )
+        regime_onset_rules = (
+            alt.Chart(regime_data)
+            .mark_rule(strokeDash=[4, 3], strokeWidth=1.1, opacity=0.70)
+            .encode(
+                x=alt.X("Start_Year_Str:O", scale=shared_x_scale),
+                color=alt.Color("Color:N", scale=None),
+            )
+        )
+        annual_layers.extend([regime_bands, regime_onset_rules])
+
     annual_layers.extend([area_layer, points_layer, central_rule])
 
     # When a State or PADD region is chosen, overlay a subtle dotted U.S. National reference curve
@@ -1566,8 +1955,6 @@ else:
 
     if is_single_annual_year:
         sel_records = [r for r in ann_records if r["Is_Selected"]]
-        for r in sel_records:
-            r["Callout_Text"] = f"{r['Year_Str']}: {r['Price_Fmt']}"
         sel_data = alt.Data(values=sel_records)
         sel_vline = (
             alt.Chart(sel_data)
@@ -1589,16 +1976,7 @@ else:
                     tooltip=ann_tooltips,
                 )
             )
-            sel_label = (
-                alt.Chart(sel_data)
-                .mark_text(dy=-14, fontSize=11, fontWeight="bold", color="#111111")
-                .encode(
-                    x=alt.X("Year_Str:O", scale=shared_x_scale),
-                    y=alt.Y("Price:Q", scale=locked_y_scale_a),
-                    text="Callout_Text:N",
-                )
-            )
-            annual_layers.extend([sel_vline, sel_halo, sel_dot, sel_label])
+            annual_layers.extend([sel_vline, sel_halo, sel_dot])
         else:
             sel_dot = (
                 alt.Chart(sel_data)
@@ -1630,87 +2008,7 @@ else:
         )
 
     if show_annual_events:
-        annual_events_meta = [
-            {
-                "Year": 1998,
-                "Category": "YoY Event 1: Macro & Pandemic Demand Shocks",
-                "Above_Label": "Asian Crisis",
-                "Below_Label": "",
-                "Event": "Asian Financial Crisis slumps global oil demand (34-year price low)",
-            },
-            {
-                "Year": 2000,
-                "Category": "YoY Event 2: OPEC+ & U.S. Shale Supply",
-                "Above_Label": "OPEC Cuts",
-                "Below_Label": "",
-                "Event": "Coordinated OPEC production cuts drive +30.6% annual price surge",
-            },
-            {
-                "Year": 2005,
-                "Category": "Monthly Event 3: Gulf Coast Hurricanes",
-                "Above_Label": "Katrina & Rita",
-                "Below_Label": "",
-                "Event": "Hurricanes Katrina & Rita knock Gulf Coast offshore rigs and refineries offline",
-            },
-            {
-                "Year": 2008,
-                "Category": "YoY Event 1: Macro & Pandemic Demand Shocks",
-                "Above_Label": "Financial Crisis",
-                "Below_Label": "",
-                "Event": "Global Financial Crisis spike in 2008 followed by -27.5% crash in 2009",
-            },
-            {
-                "Year": 2011,
-                "Category": "YoY Event 4: SPR Releases & Blending Policy",
-                "Above_Label": "",
-                "Below_Label": "SPR Release",
-                "Event": "Emergency 30.6M-bbl Strategic Petroleum Reserve (SPR) drawdown & ethanol blending mandates",
-            },
-            {
-                "Year": 2012,
-                "Category": "YoY Event 3: Geopolitical Conflicts & Sanctions",
-                "Above_Label": "Libya / Iran Sanctions",
-                "Below_Label": "",
-                "Event": "Arab Spring, Libyan civil war supply outage & Iran oil sanctions",
-            },
-            {
-                "Year": 2015,
-                "Category": "YoY Event 2: OPEC+ & U.S. Shale Supply",
-                "Above_Label": "U.S. Shale Glut",
-                "Below_Label": "",
-                "Event": "U.S. shale oil boom & OPEC price war trigger -27.7% annual drop",
-            },
-            {
-                "Year": 2020,
-                "Category": "YoY Event 1: Macro & Pandemic Demand Shocks",
-                "Above_Label": "",
-                "Below_Label": "COVID-19",
-                "Event": "COVID-19 lockdown drop (-16.7%) followed by 2021 reopening surge (+38.7%)",
-            },
-            {
-                "Year": 2022,
-                "Category": "YoY Event 3: Geopolitical Conflicts & Sanctions",
-                "Above_Label": "Russia–Ukraine & SPR",
-                "Below_Label": "",
-                "Event": "Russia–Ukraine War supply rerouting cushioned by 180M-bbl SPR release",
-            },
-            {
-                "Year": 2024,
-                "Category": "YoY Event 2: OPEC+ & U.S. Shale Supply",
-                "Above_Label": "Non-OPEC Supply",
-                "Below_Label": "",
-                "Event": "Record U.S. & Americas oil output eases annual prices across 2023–2025",
-            },
-            {
-                "Year": 2026,
-                "Category": "YoY Event 3: Geopolitical Conflicts & Sanctions",
-                "Above_Label": "Iran War",
-                "Below_Label": "",
-                "Event": "U.S.–Israel war with Iran (begun Feb 28, 2026) & Strait of Hormuz crisis trigger sharp oil and pump price surge",
-            },
-        ]
-
-        events_df = pd.DataFrame(annual_events_meta)
+        events_df = pd.DataFrame(ANNUAL_EVENTS_META)
         events_merged = pd.merge(
             events_df,
             ann[["Year", "Year_Str", "Price", "Price_Fmt", "YoY_Diff_Fmt", "YoY_Pct_Fmt", "YoY_Pct"]],
@@ -1730,26 +2028,20 @@ else:
                 "YoY_Diff_Fmt",
                 "YoY_Pct_Fmt",
                 "YoY_Pct_Plot",
+                "Annual_Regime",
             ]
         ].to_dict(orient="records")
 
-        event_categories = [
-            "YoY Event 1: Macro & Pandemic Demand Shocks",
-            "YoY Event 2: OPEC+ & U.S. Shale Supply",
-            "YoY Event 3: Geopolitical Conflicts & Sanctions",
-            "YoY Event 4: SPR Releases & Blending Policy",
-            "Monthly Event 3: Gulf Coast Hurricanes",
-        ]
-        event_colors = ["#d95f02", "#7570b3", "#e7298a", "#66a61e", "#e6ab02"]
+        point_only_records = [r for r in event_records if not r["Annual_Regime"]]
 
         event_rules = (
-            alt.Chart(alt.Data(values=event_records))
+            alt.Chart(alt.Data(values=point_only_records))
             .mark_rule(strokeDash=[3, 3], strokeWidth=1.2, opacity=0.65)
             .encode(
                 x=alt.X("Year_Str:O", scale=shared_x_scale),
                 color=alt.Color(
                     "Category:N",
-                    scale=alt.Scale(domain=event_categories, range=event_colors),
+                    scale=alt.Scale(domain=EVENT_CATEGORIES, range=EVENT_COLORS),
                     legend=None,
                 ),
             )
@@ -1763,7 +2055,7 @@ else:
                 y=alt.Y("Price:Q", scale=locked_y_scale_a),
                 color=alt.Color(
                     "Category:N",
-                    scale=alt.Scale(domain=event_categories, range=event_colors),
+                    scale=alt.Scale(domain=EVENT_CATEGORIES, range=EVENT_COLORS),
                     legend=None,
                 ),
                 tooltip=[
@@ -1810,6 +2102,46 @@ else:
         )
 
         annual_layers.extend([event_rules, event_diamonds, above_texts, above_edge_texts, below_texts])
+
+        if annual_regimes:
+            regime_tooltips = [
+                alt.Tooltip("Regime_Name:N", title="Inflection Regime"),
+                alt.Tooltip("Swing_Fmt:N", title=f"{geo_short} Price Swing"),
+                alt.Tooltip("Category:N", title="Driver Category"),
+                alt.Tooltip("Event:N", title="Historical Driver"),
+            ]
+            for reg in annual_regimes:
+                reg_single = alt.Data(values=[reg])
+                reg_pill_bg = (
+                    alt.Chart(reg_single)
+                    .mark_rect(
+                        width=reg["Pill_Width"],
+                        height=25,
+                        cornerRadius=5,
+                        fill="white",
+                        stroke=reg["Color"],
+                        strokeWidth=1.0,
+                        opacity=0.95,
+                    )
+                    .encode(
+                        x=alt.X("Start_Year_Str:O", scale=shared_x_scale),
+                        x2=alt.X2("End_Year_Str:O"),
+                        y=alt.Y("Y_Pill:Q", scale=locked_y_scale_a),
+                        tooltip=regime_tooltips,
+                    )
+                )
+                reg_pill_txt = (
+                    alt.Chart(reg_single)
+                    .mark_text(fontSize=8.0, fontWeight="bold", color="#222222", lineHeight=10)
+                    .encode(
+                        x=alt.X("Start_Year_Str:O", scale=shared_x_scale),
+                        x2=alt.X2("End_Year_Str:O"),
+                        y=alt.Y("Y_Pill:Q", scale=locked_y_scale_a),
+                        text="Pill_Lines:N",
+                        tooltip=regime_tooltips,
+                    )
+                )
+                annual_layers.extend([reg_pill_bg, reg_pill_txt])
 
     if is_single_annual_year:
         annual_chart_title = (
@@ -1892,7 +2224,7 @@ else:
                 x=alt.X("Year_Str:O", scale=shared_x_scale),
                 color=alt.Color(
                     "Category:N",
-                    scale=alt.Scale(domain=event_categories, range=event_colors),
+                    scale=alt.Scale(domain=EVENT_CATEGORIES, range=EVENT_COLORS),
                     legend=None,
                 ),
             )
@@ -1905,7 +2237,7 @@ else:
                 y=alt.Y("YoY_Pct_Plot:Q"),
                 color=alt.Color(
                     "Category:N",
-                    scale=alt.Scale(domain=event_categories, range=event_colors),
+                    scale=alt.Scale(domain=EVENT_CATEGORIES, range=EVENT_COLORS),
                     legend=None,
                 ),
                 tooltip=[
